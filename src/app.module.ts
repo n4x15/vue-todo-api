@@ -3,9 +3,15 @@ import { AppController } from './app.controller'
 import { AppService } from './app.service'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import ormconfig from 'ormconfig'
+import { ConfigModule } from '@nestjs/config'
 
 @Module({
-  imports: [TypeOrmModule.forRoot(ormconfig)],
+  imports: [
+    TypeOrmModule.forRoot(ormconfig),
+    ConfigModule.forRoot({
+      isGlobal: true
+    })
+  ],
   controllers: [AppController],
   providers: [AppService]
 })
