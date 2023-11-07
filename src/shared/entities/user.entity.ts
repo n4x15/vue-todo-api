@@ -3,9 +3,11 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn
 } from 'typeorm'
+import Task from './task.entity'
 
 @Entity({ name: 'users' })
 export default class User extends BaseEntity {
@@ -36,6 +38,11 @@ export default class User extends BaseEntity {
 
   @Column({ name: 'password' })
   password: string
+
+  @OneToMany(() => Task, (task) => task.user, {
+    cascade: true
+  })
+  tasks: Task[]
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date
