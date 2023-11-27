@@ -7,7 +7,7 @@ import { Repository } from 'typeorm'
 export default class CurrentUserService {
   constructor(@InjectRepository(User) private readonly usersRepository: Repository<User>) {}
 
-  async process(id: string) {
+  async process(id: string): Promise<User> {
     if (id == null) return
     const user = await this.usersRepository.findOne({ where: { id } })
     if (user == null) return null

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { HttpException, Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import User from 'src/shared/entities/user.entity'
 import { Repository } from 'typeorm'
@@ -20,8 +20,12 @@ export default class SignInService {
     const { email, password } = input
     const user = await this.usersRepository.findOne({ where: { email } })
 
-    if (user == null) throw new Error('User not found')
-    if (!(await compare(password, user.password))) throw new Error('Incorrect password')
+    if (user == null) {
+      throw new HttpException('User not found', 404)
+    }
+    if (!(await compare(password, user.password))) {
+      throw new HttpException('Incorrect password', 404)
+    }
 
     const payload = { id: user.id, email: user.email }
     tokenSetter(res, 'token', this.jwtService.sign(payload))

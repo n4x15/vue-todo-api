@@ -14,7 +14,7 @@ export default class TasksCrudService {
     private readonly meetingCrudService: MeetingCrudService
   ) {}
 
-  async findAll(userId: string) {
+  async findAll(userId: string): Promise<Task[]> {
     const currentMeeting = await this.meetingCrudService.getCurrentMeeting(userId)
     const tasksQuery = this.tasksRepository
       .createQueryBuilder('tasks')
@@ -24,10 +24,10 @@ export default class TasksCrudService {
       .orderBy('tasks.order', 'ASC')
       .addOrderBy('subTasks.order', 'ASC')
 
-    if (currentMeeting != null)
+    if (currentMeeting != null && currentMeeting.completedAt != null)
       tasksQuery.andWhere(
-        '(tasks.completedAt is null or tasks.completedAt is not null and tasks.completedAt >= :meetingDate)',
-        { meetingDate: currentMeeting.startsAt }
+        '(tasks.isCompleted = false OR (tasks.isCompleted = true AND tasks.completedAt > :completedDate))',
+        { completedDate: currentMeeting.completedAt }
       )
 
     const tasks = await tasksQuery.getMany()
@@ -35,14 +35,14 @@ export default class TasksCrudService {
     return tasks ?? []
   }
 
-  async createTask(input: CreateTaskInput, userId: string) {
+  async createTask(input: CreateTaskInput, userId: string): Promise<Task> {
     const task = new Task({ ...input, userId, subTasks: [] })
     await task.save()
 
     return task
   }
 
-  async updateTask(input: UpdateTaskInput, taskId: string) {
+  async updateTask(input: UpdateTaskInput, taskId: string): Promise<Task> {
     const task = await this.tasksRepository.findOne({
       where: { id: taskId },
       relations: ['subTasks']
@@ -73,7 +73,7 @@ export default class TasksCrudService {
     return Object.fromEntries(entries)
   }
 
-  async deleteTask(taskId: string) {
+  async deleteTask(taskId: string): Promise<void> {
     const task = await this.tasksRepository.findOne({
       where: { id: taskId }
     })
@@ -82,7 +82,7 @@ export default class TasksCrudService {
     return
   }
 
-  async updateTasksOrder(input: UpdateOrderInput, userId: string) {
+  async updateTasksOrder(input: UpdateOrderInput, userId: string): Promise<void> {
     const { orders } = input
     const normalized = orders.reduce((memo, item) => {
       return { [item.id]: item.order, ...memo }

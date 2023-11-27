@@ -42,7 +42,7 @@ export default class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Get('/current-user')
-  async currentUser(@CurrentUser() user: CurrentUserContext) {
+  async currentUser(@CurrentUser() user: CurrentUserContext): Promise<User> {
     return this.currentUserService.process(user.id)
   }
 }

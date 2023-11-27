@@ -62,18 +62,22 @@ export default class MeetingCrudService {
     await lastMeeting.save()
   }
 
-  async completeMeeting(meetingId: string): Promise<void> {
+  async completeMeeting(meetingId: string, userId: string): Promise<void> {
     const meeting = await this.meetingsRepository
       .createQueryBuilder('meetings')
       .where('meetings.id = :meetingId', { meetingId })
       .getOne()
     meeting.completedAt = new Date()
     await meeting.save()
+    const nextMeeting = await this.getNextMeeting(userId)
+    const prevStartsAt = nextMeeting.startsAt
+    nextMeeting.startsAt = this.getNextMonday(prevStartsAt)
+    await nextMeeting.save()
   }
 
-  private getNextMonday(): Date {
-    const date = new Date()
-    const nextMonday = new Date()
+  private getNextMonday(baseDate?: Date): Date {
+    const date = baseDate ?? new Date()
+    const nextMonday = date
 
     if (date.getDay()) {
       nextMonday.setDate(date.getDate() + 8 - date.getDay())
