@@ -36,7 +36,7 @@ export default class TasksCrudService {
   }
 
   async createTask(input: CreateTaskInput, userId: string): Promise<Task> {
-    const task = new Task({ ...input, userId, subTasks: [] })
+    const task = new Task({ ...input, userId, subTasks: [], isCompleted: false })
     await task.save()
 
     return task

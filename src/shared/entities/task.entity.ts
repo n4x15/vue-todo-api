@@ -19,6 +19,7 @@ export default class Task extends BaseEntity {
       text: string
       userId: string
       subTasks: Task[]
+      isCompleted: boolean
     }>
   ) {
     super()
