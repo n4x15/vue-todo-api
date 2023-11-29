@@ -18,7 +18,14 @@ export default class TasksCrudService {
     const currentMeeting = await this.meetingCrudService.getCurrentMeeting(userId)
     const tasksQuery = this.tasksRepository
       .createQueryBuilder('tasks')
-      .leftJoinAndSelect('tasks.subTasks', 'subTasks')
+      .leftJoinAndSelect(
+        'tasks.subTasks',
+        'subTasks',
+        currentMeeting != null && currentMeeting.completedAt != null
+          ? '(subTasks.isCompleted = false OR (subTasks.isCompleted = true AND subTasks.completedAt > :completedDate))'
+          : undefined,
+        { completedDate: currentMeeting.completedAt }
+      )
       .where('tasks.userId = :userId', { userId })
       .andWhere('tasks.id NOT IN (select sub_task_id from sub_tasks)')
       .orderBy('tasks.order', 'ASC')
